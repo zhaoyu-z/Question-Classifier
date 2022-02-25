@@ -1,0 +1,7 @@
+Data 和 word embeddings 一起做 （l两个都做， word2vec和glove制只做一个）
+
+sentence representation下周出来bilstm后一起做，和classifier
+
+interface 每个人做的时候把命令行自己保存一下，就不单独拿出来写了
+
+report等implementation写完了再一起写
