@@ -6,7 +6,7 @@ class SplitLabel:
         count = 0
         features = []
         labels = []
-        with open(self.corpus_path, 'r') as file:
+        with open(self.corpus_path, 'r', encoding = "ISO-8859-1") as file:
             for line in file:
                 sentence = line.replace('\n','')
                 [label, feature]= sentence.split(sep=' ', maxsplit=1)
@@ -20,3 +20,7 @@ class SplitLabel:
             print ()
         file.close()
         return features, labels
+
+# split = SplitLabel("../data/train_5500.label.txt")
+# feature, label = split.generate_sentences()
+# print(label)
