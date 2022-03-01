@@ -11,27 +11,6 @@ import configparser
 
 import argparse
 
-class ReadCorpus:
-    def __init__(self,corpus_name):
-        self.corpus_name = corpus_name
-
-    def generate_sentences(self):
-        count = 0
-        features = []
-        labels = []
-        with open(self.corpus_name,'r') as file:
-            for line in file:
-                sentence = line.replace('\n','')
-                [label, feature]= sentence.split(sep=' ', maxsplit=1)
-                for sent in sentence:
-                    count += 1
-                    if (count % 10000==0):
-                        print ("read {0} sentences".format (count))
-                labels.append(label)
-                features.append(feature)
-        file.close()
-        return list(features), list(labels)
-
 class BagOfWords:
 
     def __init__(self,sentences,volcab,word_embedding_dim):
