@@ -2,14 +2,17 @@ import numpy as np
 import string
 from split_label import SplitLabel
 import configparser
+import torch
+import torch.nn as nn
+
 class Vocabulary:
     UNK_token = 0
     def __init__(self, name, dim):
         self.name = name
         self.word2ind = {}
         self.word2count = {}
-
-        self.word2vec = {"#UNK#":np.random.normal(0, 1, dim)}
+        self.word_embeddings = None
+        self.word2vec = {}
         self.ind2word = ["#UNK#"]
         self.num_words = 1
         self.stopwords = []
@@ -26,13 +29,24 @@ class Vocabulary:
         word = word.lower()
         if word not in self.word2count  and word not in string.punctuation and word not in ["``","''"] and word not in self.stopwords:
             self.word2count[word] = 1
-            self.word2vec[word] = np.zeros(self.dim)
+            #self.word2vec[word]
         elif word in self.word2count:
-            self.word2count[word] = self.word2count[word] + 1
+            self.word2count[word] += 1
 
     def add_sentence(self, sentence):
         for word in sentence.split(' '):
             self.add_word(word)
+
+    def get_word_embeddings(self):
+        self.word_embeddings = nn.Embedding(self.num_words, self.dim)
+
+    def initilize_word2vector(self):
+        num_eb = self.word_embeddings.weight.detach().numpy()
+        #print(num_eb.shape)
+        words = list(self.word2ind.keys())
+        for i in range(len(words)):
+            self.word2vec[words[i]] = torch.tensor(num_eb[i,:].tolist(), requires_grad=True)
+
 
     def filter(self, threshold):
         self.word2count = {k: v for k, v in self.word2count.items() if v >= threshold}
@@ -41,7 +55,8 @@ class Vocabulary:
         for i in range(len(self.ind2word)):
             self.word2ind[self.ind2word[i]]= i
         self.num_words = len(self.ind2word)
-
+        self.get_word_embeddings()
+        self.initilize_word2vector()
 
 
 corpus = SplitLabel("../data/train.txt")
@@ -62,10 +77,10 @@ parser.read("../data/bow.config")
 voca.filter(int(parser['Hyperparameters']['vocab_threshold']))
 print(dict(sorted(voca.word2count.items(), key=lambda item: item[1])))
 print(max(voca.word2count.values()))
-print(voca.num_words)
 
-
-
+print(voca.word2vec)
+# print(voca.num_words)
+# print(voca.word2ind)
 # with open("../data/NLTK's list of english stopwords", 'r') as file:
 #     words = file.read().split("\n")
 #     words = list(filter(None, words))
