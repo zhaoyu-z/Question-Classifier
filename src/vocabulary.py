@@ -37,15 +37,18 @@ class Vocabulary:
         for word in sentence.split(' '):
             self.add_word(word)
 
-    def get_word_embeddings(self):
+    def set_word_embeddings(self):
         self.word_embeddings = nn.Embedding(self.num_words, self.dim)
 
-    def initilize_word2vector(self):
+
+
+    def set_word2vector(self):
         num_eb = self.word_embeddings.weight.detach().numpy()
         #print(num_eb.shape)
         words = list(self.word2ind.keys())
         for i in range(len(words)):
-            self.word2vec[words[i]] = torch.tensor(num_eb[i,:].tolist(), requires_grad=True)
+            self.word2vec[words[i]] = torch.tensor(num_eb[i,:].tolist())#, requires_grad=True)
+
 
 
     def filter(self, threshold):
@@ -55,8 +58,33 @@ class Vocabulary:
         for i in range(len(self.ind2word)):
             self.word2ind[self.ind2word[i]]= i
         self.num_words = len(self.ind2word)
-        self.get_word_embeddings()
-        self.initilize_word2vector()
+        self.set_word_embeddings()
+        self.set_word2vector()
+
+    def get_word_embeddings(self):
+        return self.word_embeddings
+
+    def get_word_vector(self, word):
+
+        return self.word2vec[word]
+
+    def get_sentence_vector(self, sentence):
+        output = []
+        for word in sentence.split(' '):
+            word = word.lower()
+            if word in self.word2vec:
+                print(word)
+                output.append(self.word2vec[word])
+            else:
+                print("#UNK#")
+                output.append(self.word2vec["#UNK#"])
+
+        output = torch.stack(output, dim=0)
+
+        return output
+
+
+
 
 
 corpus = SplitLabel("../data/train.txt")
@@ -78,7 +106,18 @@ voca.filter(int(parser['Hyperparameters']['vocab_threshold']))
 print(dict(sorted(voca.word2count.items(), key=lambda item: item[1])))
 print(max(voca.word2count.values()))
 
-print(voca.word2vec)
+print(len(voca.word2ind))
+print(len(voca.word2count))
+print(len(voca.word2vec))
+print(len(voca.ind2word))
+print(voca.num_words)
+
+t = voca.get_sentence_vector("What does the name ` Fatman ' mean ?")
+# print(t.size())
+# torch.set_printoptions(profile="full")
+# print(t)
+# print(t)
+# print(voca.word2ind.keys())
 # print(voca.num_words)
 # print(voca.word2ind)
 # with open("../data/NLTK's list of english stopwords", 'r') as file:
