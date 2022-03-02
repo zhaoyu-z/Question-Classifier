@@ -74,10 +74,10 @@ class Vocabulary:
             word = word.lower()
             if word in self.word2vec:
                 print(word)
-                output.append(self.word2vec[word])
+                output.append(self.get_word_vector(word))
             else:
                 print("#UNK#")
-                output.append(self.word2vec["#UNK#"])
+                output.append(self.get_word_vector("#UNK#"))
 
         output = torch.stack(output, dim=0)
 
