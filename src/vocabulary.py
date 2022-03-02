@@ -73,10 +73,10 @@ class Vocabulary:
         for word in sentence.split(' '):
             word = word.lower()
             if word in self.word2vec:
-                print(word)
+                # print(word)
                 output.append(self.get_word_vector(word))
             else:
-                print("#UNK#")
+                # print("#UNK#")
                 output.append(self.get_word_vector("#UNK#"))
 
         output = torch.stack(output, dim=0)
@@ -96,26 +96,26 @@ voca = Vocabulary("train", 300)
 voca.read_stop_words('../data/stopwords.txt')
 for s in features:
     voca.add_sentence(s)
-print(len(voca.word2count.keys()))
+# print(len(voca.word2count.keys()))
 
 parser = configparser.ConfigParser()
 parser.sections()
 parser.read("../data/bow.config")
 
 voca.filter(int(parser['Hyperparameters']['vocab_threshold']))
-print(dict(sorted(voca.word2count.items(), key=lambda item: item[1])))
-print(max(voca.word2count.values()))
+# print(dict(sorted(voca.word2count.items(), key=lambda item: item[1])))
+# print(max(voca.word2count.values()))
 
-print(len(voca.word2ind))
-print(len(voca.word2count))
-print(len(voca.word2vec))
-print(len(voca.ind2word))
-print(voca.num_words)
+# print(len(voca.word2ind))
+# print(len(voca.word2count))
+# print(len(voca.word2vec))
+# print(len(voca.ind2word))
+# print(voca.num_words)
 
 t = voca.get_sentence_vector("What does the name ` Fatman ' mean ?")
 # print(t.size())
 # torch.set_printoptions(profile="full")
-# print(t)
+print(t)
 # print(t)
 # print(voca.word2ind.keys())
 # print(voca.num_words)
