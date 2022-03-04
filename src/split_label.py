@@ -17,7 +17,7 @@ class SplitLabel:
                 labels.append(label)
                 features.append(feature)
             # print ("Done reading file")
-            print ()
+            # print ()
         file.close()
         return features, labels
 

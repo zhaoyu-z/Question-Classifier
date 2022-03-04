@@ -2,14 +2,12 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-
 import numpy
 import string
 import random
-
 import configparser
-
 import argparse
+import bilstm
 
 class BagOfWords:
 
@@ -36,28 +34,6 @@ class BagOfWords:
             bow_vecs.append(bow_vector)
         return bow_vecs
 
-
-class BiLSTMTagger(nn.Module):
-
-   def __init__(self, embedding_dim, hidden_dim, vocab_size, tagset_size):
-       super(BiLSTMTagger, self).__init__()
-       self.hidden_dim = hidden_dim
-       self.word_embeddings = nn.Embedding(vocab_size, embedding_dim)
-
-       self.lstm = nn.LSTM(embedding_dim, hidden_dim, bidirectional=True)
-
-       self.hidden2tag = nn.Linear(hidden_dim, tagset_size)
-
-   def forward(self, sentence):
-        embeds = self.word_embeddings(sentence)
-
-        bilstm_out, (h_n, c_n) = self.lstm(embeds.view(len(sentence), 1, -1))
-
-        tag_space = self.hidden2tag(bilstm_out.view(len(sentence), -1))
-        tag_scores = F.log_softmax(tag_space, dim=1)
-        return tag_scores
-
-
 #"../data/config.ini"
 def train(confi_file_path):
     torch.manual_seed(1)
@@ -70,8 +46,10 @@ def train(confi_file_path):
 
     config.read(confi_file_path)
 
-    #overall5500 = config["Paths To Datasets And Evaluation"]["path_overall"]
-
+    if confi_file_path.split('/')[-1] == 'bilstm.config':
+        bilstm.train()
+    # else:
+    #     bow.train()
 
 def test(confi_file_path):
     torch.manual_seed(1)
@@ -84,7 +62,10 @@ def test(confi_file_path):
 
     config.read(confi_file_path)
 
-    #overall5500 = config["Paths To Datasets And Evaluation"]["path_overall"]
+    if confi_file_path.split('/')[-1] == 'bilstm.config':
+        bilstm.test()
+    # else:
+    #     bow.test()
 
 
 parser = argparse.ArgumentParser()
