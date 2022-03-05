@@ -12,14 +12,14 @@ from split_label import SplitLabel
 
 class BagOfWords(nn.Module):
 
-    def __init__(self, tagset_size, vol, file_path):
+    def __init__(self, tagset_size, word_embeddings, file_path):
         self.embedding_dim = int(parser['Network Structure']['word_embedding_dim'])
         self.hidden_dim = int(self.embedding_dim*2/3)
         # self.hidden_dim = 128
 
         super(BagOfWords, self).__init__()
 
-        self.vol = vol
+        self.word_embeddings = word_embeddings
 
         self.hidden2tag = nn.Linear(self.embedding_dim, self.hidden_dim)
 
@@ -28,17 +28,17 @@ class BagOfWords(nn.Module):
         self.hidden3tag = nn.Linear(self.hidden_dim, tagset_size)
 
 
-    def bow_vec(self, sentence):
-        embeds = get_embvec(sentence, self.vol, self.embedding_dim)
-
-        embeds = torch.mean(embeds, dim=0)
-
-        return embeds
+    # def bow_vec(self, sentence):
+    #     #embeds = get_embvec(sentence, self.vol, self.embedding_dim)
+    #
+    #     embeds = torch.mean(embeds, dim=0)
+    #
+    #     return embeds
 
     def forward(self, sentence):
-        bilstm_out = self.bow_vec(sentence)
-
-        tag_space = self.hidden2tag(bilstm_out)
+        sentence_vector = self.word_embeddings(sentence)
+        sentence_vector = torch.mean(sentence_vector, dim=0)
+        tag_space = self.hidden2tag(sentence_vector)
 
         tag_space = self.activation_function1(tag_space)
 
@@ -50,17 +50,27 @@ class BagOfWords(nn.Module):
 
 def train(file_path):
     pretrained = parser['Options for model']['pretrained']
+    freeze = eval(parser['Options for model']['freeze'])
     train_path = parser['Paths To Datasets And Evaluation']['path_train']
     word_dim = parser['Network Structure']['word_embedding_dim']
     if eval(pretrained):
         print("pretrained")
+        if freeze:
+            print("Frozen")
+        else:
+            print("Fine-tuning")
         glove_path = parser['Using pre-trained Embeddings']['path_pre_emb']
         vec = read_glove(glove_path)
+        voca = Vocabulary("train", 300)
+        voca.set_word_vector(vec)
+        voca.from_word2vect_word2ind()
+        voca.from_word2vect_wordEmbeddings(freeze)
+        word_emb = voca.get_word_embeddings()
     else:
         print("random")
         voca = Vocabulary("train", word_dim)
         voca.setup('../data/train.txt')
-        vec = voca.get_word2vector()
+        word_emb = voca.get_word_embeddings()
     features,labels = SplitLabel(train_path).generate_sentences()
 
     tag_to_ix = {}
@@ -70,7 +80,7 @@ def train(file_path):
             tag_to_ix[l] = id
             id += 1
 
-    model = BagOfWords(len(tag_to_ix), vec, file_path)
+    model = BagOfWords(len(tag_to_ix), word_emb, file_path)
 
     loss_function = nn.NLLLoss()
     optimizer = optim.SGD(model.parameters(), lr=0.02)
@@ -88,7 +98,8 @@ def train(file_path):
             targets = torch.tensor([tag_to_ix[tags]],dtype=torch.long)
 
             # Step 3. Run our forward pass.
-            tag_scores = model.forward(sentence)
+            sentence_in = voca.get_sentence_ind(sentence)
+            tag_scores = model.forward(sentence_in)
             #
             # Step 4. Compute the loss, gradients, and update the parameters by
             #  calling optimizer.step()
@@ -101,8 +112,8 @@ def train(file_path):
         with torch.no_grad():
             acc = 0
             for sentence, tags in zip(features,labels):
-
-                tag_scores = model.forward(sentence)
+                sentence_in = voca.get_sentence_ind(sentence)
+                tag_scores = model.forward(sentence_in)
 
                 ind = torch.argmax(tag_scores)
 

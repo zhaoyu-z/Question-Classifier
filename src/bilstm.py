@@ -71,6 +71,10 @@ def train(file_path):
     word_dim = parser['Network Structure']['word_embedding_dim']
     if eval(pretrained):
         print("pretrained")
+        if freeze:
+            print("Frozen")
+        else:
+            print("Fine-tuning")
         glove_path = parser['Using pre-trained Embeddings']['path_pre_emb']
         vec = read_glove(glove_path)
         voca = Vocabulary("train", 300)
