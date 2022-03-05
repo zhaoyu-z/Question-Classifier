@@ -10,7 +10,7 @@ from split_label import SplitLabel
 from vocabulary import Vocabulary
 class BiLSTMTagger(nn.Module):
 
-   def __init__(self, tagset_size, vol):
+   def __init__(self, tagset_size, vol,file_path):
        parser = configparser.ConfigParser()
        parser.sections()
        parser.read("../data/bilstm.config")
@@ -45,11 +45,11 @@ class BiLSTMTagger(nn.Module):
 
         return tag_scores
 
-def train():
+def train(file_path):
     parser = configparser.ConfigParser()
     parser.sections()
     parser.read("../data/bilstm.config")
-    pretrained = pretrained = parser['Options for model']['pretrained']
+    pretrained = parser['Options for model']['pretrained']
     train_path = parser['Paths To Datasets And Evaluation']['path_train']
     word_dim = parser['Network Structure']['word_embedding_dim']
     if eval(pretrained):
@@ -70,7 +70,7 @@ def train():
             tag_to_ix[l] = id
             id += 1
 
-    model = BiLSTMTagger(len(tag_to_ix), vec)
+    model = BiLSTMTagger(len(tag_to_ix), vec, file_path)
 
     loss_function = nn.NLLLoss()
     optimizer = optim.SGD(model.parameters(), lr=0.02)
@@ -120,7 +120,7 @@ def train():
     tag2index_file.close()
     # return model, tag_to_ix
 
-def test(model=None, tag_to_ix=None):
+def test(file_path,model=None, tag_to_ix=None):
     parser = configparser.ConfigParser()
     parser.sections()
     parser.read("../data/bilstm.config")
@@ -176,5 +176,5 @@ def test_one(model=None, tag_to_ix=None, test_sentence="How are you ?"):
             k = [k for k, v in tag_to_ix.items() if v == ind]
 
             print(k)
-train()
-test()
+# train()
+# test()

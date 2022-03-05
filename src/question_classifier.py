@@ -8,6 +8,7 @@ import random
 import configparser
 import argparse
 import bilstm
+import bow
 
 class BagOfWords:
 
@@ -47,9 +48,9 @@ def train(confi_file_path):
     config.read(confi_file_path)
 
     if confi_file_path.split('/')[-1] == 'bilstm.config':
-        bilstm.train()
-    # else:
-    #     bow.train()
+        bilstm.train(confi_file_path)
+    else:
+        bow.train(confi_file_path)
 
 def test(confi_file_path):
     torch.manual_seed(1)
@@ -63,9 +64,9 @@ def test(confi_file_path):
     config.read(confi_file_path)
 
     if confi_file_path.split('/')[-1] == 'bilstm.config':
-        bilstm.test()
-    # else:
-    #     bow.test()
+        bilstm.test(confi_file_path)
+    else:
+        bow.test(confi_file_path)
 
 
 parser = argparse.ArgumentParser()
