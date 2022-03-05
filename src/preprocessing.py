@@ -1,6 +1,7 @@
 import string
 import torch
 import torch.nn as nn
+import configparser
 
 def get_embvec(sentence, vol, embedding_dim):
     words = sentence.split()
@@ -11,5 +12,8 @@ def get_embvec(sentence, vol, embedding_dim):
             vec[i] = (vol.get(words[i]))
         else:
             vec[i] = (vol.get("#UNK#"))
-    
+
     return vec
+
+parser = configparser.ConfigParser()
+parser.sections()

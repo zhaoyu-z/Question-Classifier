@@ -5,7 +5,7 @@ import torch.optim as optim
 import numpy
 import string
 import random
-import configparser
+from preprocessing import parser as conf_parser
 import argparse
 import bilstm
 import bow
@@ -38,14 +38,9 @@ class BagOfWords:
 #"../data/config.ini"
 def train(confi_file_path):
     torch.manual_seed(1)
-
     random.seed(1)
 
-    config = configparser.ConfigParser()
-
-    config.sections()
-
-    config.read(confi_file_path)
+    conf_parser.read(confi_file_path)
 
     if confi_file_path.split('/')[-1] == 'bilstm.config':
         bilstm.train(confi_file_path)
@@ -57,11 +52,7 @@ def test(confi_file_path):
 
     random.seed(1)
 
-    config = configparser.ConfigParser()
-
-    config.sections()
-
-    config.read(confi_file_path)
+    conf_parser.read(confi_file_path)
 
     if confi_file_path.split('/')[-1] == 'bilstm.config':
         bilstm.test(confi_file_path)

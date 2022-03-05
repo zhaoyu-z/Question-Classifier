@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-import configparser
+from preprocessing import parser
 import pickle
 from preprocessing import get_embvec
 from glove import read_glove
@@ -11,9 +11,6 @@ from vocabulary import Vocabulary
 class BiLSTMTagger(nn.Module):
 
    def __init__(self, tagset_size, vol,file_path):
-       parser = configparser.ConfigParser()
-       parser.sections()
-       parser.read("../data/bilstm.config")
        self.embedding_dim = int(parser['Network Structure']['word_embedding_dim'])
        self.batch_size = int(parser['Network Structure']['batch_size'])
 
@@ -28,9 +25,6 @@ class BiLSTMTagger(nn.Module):
 
 
    def bilstm_vec(self, sentence):
-       parser = configparser.ConfigParser()
-       parser.sections()
-       parser.read("../data/bilstm.config")
        pretrained = eval(parser['Options for model']['pretrained'])
        freeze = eval(parser['Options for model']['freeze'])
        embeds = get_embvec(sentence, self.vol, self.embedding_dim) # nn.Embedding.from_pretrained object
@@ -62,9 +56,6 @@ class BiLSTMTagger(nn.Module):
         return tag_scores
 
 def train(file_path):
-    parser = configparser.ConfigParser()
-    parser.sections()
-    parser.read("../data/bilstm.config")
     pretrained = parser['Options for model']['pretrained']
     train_path = parser['Paths To Datasets And Evaluation']['path_train']
     word_dim = parser['Network Structure']['word_embedding_dim']
@@ -137,9 +128,6 @@ def train(file_path):
     # return model, tag_to_ix
 
 def test(file_path,model=None, tag_to_ix=None):
-    parser = configparser.ConfigParser()
-    parser.sections()
-    parser.read("../data/bilstm.config")
     model_path = parser['Options for model']['model_save_path']
     model = torch.load(model_path)
     model.to('cpu')
@@ -165,9 +153,6 @@ def test(file_path,model=None, tag_to_ix=None):
         print(acc / len(features))
 
 def test_one(model=None, tag_to_ix=None, test_sentence="How are you ?"):
-    parser = configparser.ConfigParser()
-    parser.sections()
-    parser.read("../data/bilstm.config")
     model_path = parser['Options for model']['model_save_path']
     model = torch.load(model_path)
     model.to('cpu')

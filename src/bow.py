@@ -2,9 +2,9 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-import configparser
 import pickle
 from torch.autograd import Variable
+from preprocessing import parser
 from preprocessing import get_embvec
 from glove import read_glove
 from vocabulary import Vocabulary
@@ -13,9 +13,6 @@ from split_label import SplitLabel
 class BagOfWords(nn.Module):
 
     def __init__(self, tagset_size, vol, file_path):
-        parser = configparser.ConfigParser()
-        parser.sections()
-        parser.read(file_path)
         self.embedding_dim = int(parser['Network Structure']['word_embedding_dim'])
         self.hidden_dim = int(self.embedding_dim*2/3)
         # self.hidden_dim = 128
@@ -28,7 +25,7 @@ class BagOfWords(nn.Module):
 
         self.activation_function1 = nn.Tanh()
 
-        self.hidden3tag = nn.Linear(self.hidden_dim, len(vol))
+        self.hidden3tag = nn.Linear(self.hidden_dim, tagset_size)
 
 
     def bow_vec(self, sentence):
@@ -52,9 +49,6 @@ class BagOfWords(nn.Module):
         return tag_scores.unsqueeze(0)
 
 def train(file_path):
-    parser = configparser.ConfigParser()
-    parser.sections()
-    parser.read("../data/bow.config")
     pretrained = parser['Options for model']['pretrained']
     train_path = parser['Paths To Datasets And Evaluation']['path_train']
     word_dim = parser['Network Structure']['word_embedding_dim']
@@ -127,9 +121,6 @@ def train(file_path):
     # return model, tag_to_ix
 
 def test(file_path,model=None, tag_to_ix=None):
-    parser = configparser.ConfigParser()
-    parser.sections()
-    parser.read("../data/bow.config")
     model_path = parser['Options for model']['model_save_path']
     model = torch.load(model_path)
     model.to('cpu')
