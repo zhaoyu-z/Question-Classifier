@@ -28,7 +28,7 @@ class BagOfWords(nn.Module):
 
         self.activation_function1 = nn.Tanh()
 
-        self.hidden3tag = nn.Linear(self.hidden_dim, len(vol))
+        self.hidden3tag = nn.Linear(self.hidden_dim, tagset_size)
 
 
     def bow_vec(self, sentence):
