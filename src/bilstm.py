@@ -28,11 +28,27 @@ class BiLSTMTagger(nn.Module):
 
 
    def bilstm_vec(self, sentence):
-       embeds = get_embvec(sentence, self.vol, self.embedding_dim)
+       parser = configparser.ConfigParser()
+       parser.sections()
+       parser.read("../data/bilstm.config")
+       pretrained = eval(parser['Options for model']['pretrained'])
+       freeze = eval(parser['Options for model']['freeze'])
+       embeds = get_embvec(sentence, self.vol, self.embedding_dim) # nn.Embedding.from_pretrained object
 
-       bilstm_out, (h_n, c_n) = self.bilstm(embeds.view(len(embeds), 1, -1))
+       if pretrained:
+           #print(freeze)
+           embeds = nn.Embedding.from_pretrained(embeds, freeze=freeze)
+           # print(embeds.weight.requires_grad)
+           # bilstm_out, (h_n, c_n) = self.bilstm(embeds.view(len(embeds), 1, -1))
+           embeds_num = embeds.weight.data.numpy()
+           embeds_num = embeds_num.reshape(len(embeds_num), 1, -1)
+           #bilstm_out, (h_n, c_n) = self.bilstm(embeds.view(len(embeds_num), 1, -1))
+           bilstm_out, (h_n, c_n) = self.bilstm(torch.from_numpy(embeds_num))
+       else:
+           bilstm_out, (h_n, c_n) = self.bilstm(embeds.view(len(embeds), 1, -1))
 
        out = torch.hstack((h_n[-2, :, :], h_n[-1, :, :]))
+
        return out
 
 
