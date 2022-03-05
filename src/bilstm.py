@@ -41,7 +41,7 @@ class BiLSTMTagger(nn.Module):
 
         tag_space = self.hidden2tag(bilstm_out)
 
-        tag_scores = F.log_softmax(tag_space, dim=1)
+        tag_scores = F.log_softmax(tag_space, dim = -1)
 
         return tag_scores
 
@@ -77,7 +77,7 @@ def train():
     #optimizer = optim.Adam(model.parameters(), lr=0.05)
     #optimizer = torch.optim.Adam(model.parameters(), lr= 0.01)
 
-    for epoch in range(100):  # again, normally you would NOT do 300 epochs, it is toy data
+    for epoch in range(10):  # again, normally you would NOT do 300 epochs, it is toy data
         for sentence, tags in zip(features, labels):
             # Step 1. Remember that Pytorch accumulates gradients.
             # We need to clear them out before each instance
@@ -176,4 +176,5 @@ def test_one(model=None, tag_to_ix=None, test_sentence="How are you ?"):
             k = [k for k, v in tag_to_ix.items() if v == ind]
 
             print(k)
-test_one()
+train()
+test()
