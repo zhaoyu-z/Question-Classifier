@@ -7,7 +7,7 @@ import pickle
 from preprocessing import get_embvec
 from glove import read_glove
 from split_label import SplitLabel
-
+from vocabulary import Vocabulary
 class BiLSTMTagger(nn.Module):
 
    def __init__(self, tagset_size, vol):
@@ -33,7 +33,6 @@ class BiLSTMTagger(nn.Module):
        bilstm_out, (h_n, c_n) = self.bilstm(embeds.view(len(embeds), 1, -1))
 
        out = torch.hstack((h_n[-2, :, :], h_n[-1, :, :]))
-
        return out
 
 
@@ -50,12 +49,18 @@ def train():
     parser = configparser.ConfigParser()
     parser.sections()
     parser.read("../data/bilstm.config")
-    pretrained = parser['Options for model']['pretrained']
+    pretrained = pretrained = parser['Options for model']['pretrained']
     train_path = parser['Paths To Datasets And Evaluation']['path_train']
-    if pretrained:
+    word_dim = parser['Network Structure']['word_embedding_dim']
+    if eval(pretrained):
+        print("pretrained")
         glove_path = parser['Using pre-trained Embeddings']['path_pre_emb']
-        glove_vec = read_glove(glove_path)
-
+        vec = read_glove(glove_path)
+    else:
+        print("random")
+        voca = Vocabulary("train", word_dim)
+        voca.setup('../data/train.txt')
+        vec = voca.get_word2vector()
     features,labels = SplitLabel(train_path).generate_sentences()
 
     tag_to_ix = {}
@@ -65,13 +70,14 @@ def train():
             tag_to_ix[l] = id
             id += 1
 
-    model = BiLSTMTagger(len(tag_to_ix), glove_vec)
+    model = BiLSTMTagger(len(tag_to_ix), vec)
 
     loss_function = nn.NLLLoss()
-    optimizer = optim.SGD(model.parameters(), lr=0.1)
+    optimizer = optim.SGD(model.parameters(), lr=0.02)
+    #optimizer = optim.Adam(model.parameters(), lr=0.05)
+    #optimizer = torch.optim.Adam(model.parameters(), lr= 0.01)
 
-
-    for epoch in range(10):  # again, normally you would NOT do 300 epochs, it is toy data
+    for epoch in range(100):  # again, normally you would NOT do 300 epochs, it is toy data
         for sentence, tags in zip(features, labels):
             # Step 1. Remember that Pytorch accumulates gradients.
             # We need to clear them out before each instance
@@ -170,3 +176,4 @@ def test_one(model=None, tag_to_ix=None, test_sentence="How are you ?"):
             k = [k for k, v in tag_to_ix.items() if v == ind]
 
             print(k)
+test_one()

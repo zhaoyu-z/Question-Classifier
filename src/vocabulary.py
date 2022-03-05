@@ -38,7 +38,7 @@ class Vocabulary:
             self.add_word(word)
 
     def set_word_embeddings(self):
-        self.word_embeddings = nn.Embedding(self.num_words, self.dim)
+        self.word_embeddings = nn.Embedding(self.num_words, int(self.dim))
 
 
 
@@ -48,7 +48,6 @@ class Vocabulary:
         words = list(self.word2ind.keys())
         for i in range(len(words)):
             self.word2vec[words[i]] = torch.tensor(num_eb[i,:].tolist())#, requires_grad=True)
-
 
 
     def filter(self, threshold):
@@ -68,6 +67,9 @@ class Vocabulary:
 
         return self.word2vec[word]
 
+    def get_word2vector(self):
+        return self.word2vec
+
     def get_sentence_vector(self, sentence):
         output = []
         for word in sentence.split(' '):
@@ -83,26 +85,44 @@ class Vocabulary:
 
         return output
 
+    def setup(self, cor):
+        corpus = SplitLabel(cor)
+        features,_ = corpus.generate_sentences()
+        #print(features)
+        self.read_stop_words('../data/stopwords.txt')
+        for s in features:
+            self.add_sentence(s)
+        # print(len(voca.word2count.keys()))
+
+        parser = configparser.ConfigParser()
+        parser.sections()
+        parser.read("../data/bow.config")
+
+        self.filter(int(parser['Hyperparameters']['vocab_threshold']))
 
 
 
 
-corpus = SplitLabel("../data/train.txt")
-features,_ = corpus.generate_sentences()
-#print(features)
+
+
+
+# corpus = SplitLabel("../data/train.txt")
+# features,_ = corpus.generate_sentences()
+# #print(features)
 
 
 voca = Vocabulary("train", 300)
-voca.read_stop_words('../data/stopwords.txt')
-for s in features:
-    voca.add_sentence(s)
-# print(len(voca.word2count.keys()))
-
-parser = configparser.ConfigParser()
-parser.sections()
-parser.read("../data/bow.config")
-
-voca.filter(int(parser['Hyperparameters']['vocab_threshold']))
+# voca.read_stop_words('../data/stopwords.txt')
+# for s in features:
+#     voca.add_sentence(s)
+# # print(len(voca.word2count.keys()))
+#
+# parser = configparser.ConfigParser()
+# parser.sections()
+# parser.read("../data/bow.config")
+#
+# voca.filter(int(parser['Hyperparameters']['vocab_threshold']))
+voca.setup("../data/train.txt")
 # print(dict(sorted(voca.word2count.items(), key=lambda item: item[1])))
 # print(max(voca.word2count.values()))
 
@@ -115,7 +135,6 @@ voca.filter(int(parser['Hyperparameters']['vocab_threshold']))
 t = voca.get_sentence_vector("What does the name ` Fatman ' mean ?")
 # print(t.size())
 # torch.set_printoptions(profile="full")
-print(t)
 # print(t)
 # print(voca.word2ind.keys())
 # print(voca.num_words)
