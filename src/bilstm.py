@@ -69,6 +69,7 @@ def train(file_path):
     freeze = eval(parser['Options for model']['freeze'])
     train_path = parser['Paths To Datasets And Evaluation']['path_train']
     word_dim = parser['Network Structure']['word_embedding_dim']
+    learning_rate = float(parser['Hyperparameters']['lr_param'])
     if eval(pretrained):
         print("pretrained")
         if freeze:
@@ -98,7 +99,7 @@ def train(file_path):
     model = BiLSTMTagger(len(tag_to_ix), file_path, word_emb)
 
     loss_function = nn.NLLLoss()
-    optimizer = optim.SGD(model.parameters(), lr=0.02)
+    optimizer = optim.SGD(model.parameters(), lr=learning_rate)
     #optimizer = optim.Adam(model.parameters(), lr=0.05)
     #optimizer = torch.optim.Adam(model.parameters(), lr= 0.01)
 
@@ -135,7 +136,7 @@ def train(file_path):
                 k = [k for k, v in tag_to_ix.items() if v == ind]
 
                 if k[0] == tags:
-                    acc += 1
+                    acc += 1 ######################################################## F1 scores
             print(acc / len(features))
 
     torch.save(model, parser['Options for model']['model_save_path'])
@@ -144,6 +145,12 @@ def train(file_path):
     tag2index_file = open(tag2index_filepath, "wb")
     pickle.dump(tag_to_ix, tag2index_file)
     tag2index_file.close()
+
+    # voca_filepath = parser['Options for model']['tag2index_save_path']
+    voca_filepath = "../data/bilstm.voca"
+    voca_file = open(voca_filepath, "wb")
+    pickle.dump(voca, voca_file)
+    voca_file.close()
     # return model, tag_to_ix
 
 def test(file_path,model=None, tag_to_ix=None):
@@ -157,14 +164,18 @@ def test(file_path,model=None, tag_to_ix=None):
     tag2index_file = open(tag2index_path, "rb")
     tag_to_ix = pickle.load(tag2index_file)
 
+    voca_filepath = "../data/bilstm.voca"
+    voca_file = open(voca_filepath, "rb")
+    voca = pickle.load(voca_file)
+
     test_path = parser['Paths To Datasets And Evaluation']['path_test']
     features, labels = SplitLabel(test_path).generate_sentences()
 
     with torch.no_grad():
         acc = 0
         for sentence, tags in zip(features, labels):
-
-            tag_scores = model.forward(sentence)
+            sentence_in = voca.get_sentence_ind(sentence)
+            tag_scores = model.forward(sentence_in)
 
             ind = torch.argmax(tag_scores)
 
