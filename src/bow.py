@@ -61,7 +61,7 @@ def train(file_path):
             print("Fine-tuning")
         glove_path = parser['Using pre-trained Embeddings']['path_pre_emb']
         vec = read_glove(glove_path)
-        voca = Vocabulary("train", 300)
+        voca = Vocabulary("train", word_dim)
         voca.set_word_vector(vec)
         voca.from_word2vect_word2ind()
         voca.from_word2vect_wordEmbeddings(freeze)
