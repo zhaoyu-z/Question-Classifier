@@ -127,45 +127,44 @@ class Vocabulary:
 
 
 
-# corpus = SplitLabel("../data/train.txt")
-# features,_ = corpus.generate_sentences()
-# #print(features)
 
+def test():
+    corpus = SplitLabel("../data/train.txt")
+    features,_ = corpus.generate_sentences()
+    #print(features)
+    voca = Vocabulary("train", 300)
+    voca.read_stop_words('../data/stopwords.txt')
+    for s in features:
+        voca.add_sentence(s)
+    # print(len(voca.word2count.keys()))
 
-voca = Vocabulary("train", 300)
-# voca.read_stop_words('../data/stopwords.txt')
-# for s in features:
-#     voca.add_sentence(s)
-# # print(len(voca.word2count.keys()))
-#
-# parser = configparser.ConfigParser()
-# parser.sections()
-# parser.read("../data/bow.config")
-#
-# voca.filter(int(parser['Hyperparameters']['vocab_threshold']))
-voca.setup("../data/train.txt")
-# print(dict(sorted(voca.word2count.items(), key=lambda item: item[1])))
-# print(max(voca.word2count.values()))
+    parser = configparser.ConfigParser()
+    parser.sections()
+    parser.read("../data/bow.config")
 
-# print(len(voca.word2ind))
-# print(len(voca.word2count))
-# print(len(voca.word2vec))
-# print(len(voca.ind2word))
-# print(voca.num_words)
+    voca.filter(int(parser['Hyperparameters']['vocab_threshold']))
+    voca.setup("../data/train.txt")
+    print(dict(sorted(voca.word2count.items(), key=lambda item: item[1])))
+    print(max(voca.word2count.values()))
 
-#t = voca.get_sentence_vector("What does the name ` Fatman ' mean ?")
-# print(t.size())
-# torch.set_printoptions(profile="full")
-# print(t)
-# print(voca.word2ind.keys())
-# print(voca.num_words)
-# print(voca.word2ind)
-# with open("../data/NLTK's list of english stopwords", 'r') as file:
-#     words = file.read().split("\n")
-#     words = list(filter(None, words))
-#     print(words)
+    print(len(voca.word2ind))
+    print(len(voca.word2count))
+    print(len(voca.word2vec))
+    print(len(voca.ind2word))
+    print(voca.num_words)
 
-
-vec = read_glove("../data/glove.small.txt")
-voca = Vocabulary("train", 300)
-voca.set_word_vector(vec)
+    t = voca.get_sentence_ind("What does the name ` Fatman ' mean ?")
+    print(t.size())
+    torch.set_printoptions(profile="full")
+    print(t)
+    print(voca.word2ind.keys())
+    print(voca.num_words)
+    print(voca.word2ind)
+    with open("../data/stopwords.txt", 'r') as file:
+        words = file.read().split("\n")
+        words = list(filter(None, words))
+    #     print(words)
+    vec = read_glove("../data/glove.small.txt")
+    voca = Vocabulary("train", 300)
+    voca.set_word_vector(vec)
+#test()
