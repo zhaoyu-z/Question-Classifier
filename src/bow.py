@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 import pickle
+from sklearn.metrics import f1_score, accuracy_score, confusion_matrix
 from torch.autograd import Variable
 from preprocessing import parser
 from preprocessing import get_embvec
@@ -111,18 +112,31 @@ def train(file_path):
 
         print("Epoch", epoch)
         with torch.no_grad():
-            acc = 0
+            y_true = []
+            y_pred = []
+            most_error_label = {}
             for sentence, tags in zip(features,labels):
                 sentence_in = voca.get_sentence_ind(sentence)
                 tag_scores = model.forward(sentence_in)
 
                 ind = torch.argmax(tag_scores)
 
-                k = [k for k, v in tag_to_ix.items() if v == ind]
+                y_pred.append(ind)
+                y_true.append(tag_to_ix[tags])
 
-                if k[0] == tags:
-                    acc += 1
-            print(acc / len(features))
+                if tag_to_ix[tags] != ind:
+                    if tags not in most_error_label.keys():
+                        most_error_label[tags] = 1
+                    else:
+                        most_error_label[tags] += 1
+
+            most_error_label = sorted(most_error_label.items(), key=lambda item: item[1], reverse=True)[:3]
+
+            print("Accuracy", accuracy_score(y_true,y_pred))
+            print("F1-score", f1_score(y_true,y_pred,average='macro'))
+            print("Confusion_matrix \n", confusion_matrix(y_true,y_pred))
+            print("Most error label dictionary",most_error_label)
+            print()
 
     torch.save(model, parser['Options for model']['model_save_path'])
 
@@ -154,15 +168,27 @@ def test(file_path,model=None, tag_to_ix=None):
     features, labels = SplitLabel(test_path).generate_sentences()
 
     with torch.no_grad():
-        acc = 0
-        for sentence, tags in zip(features, labels):
+        y_true = []
+        y_pred = []
+        most_error_label = {}
+        for sentence, tags in zip(features,labels):
             sentence_in = voca.get_sentence_ind(sentence)
             tag_scores = model.forward(sentence_in)
 
             ind = torch.argmax(tag_scores)
 
-            k = [k for k, v in tag_to_ix.items() if v == ind]
+            y_pred.append(ind)
+            y_true.append(tag_to_ix[tags])
 
-            if k[0] == tags:
-                acc += 1
-        print(acc / len(features))
+            if tag_to_ix[tags] != ind:
+                if tags not in most_error_label.keys():
+                    most_error_label[tags] = 1
+                else:
+                    most_error_label[tags] += 1
+
+        most_error_label = sorted(most_error_label.items(), key=lambda item: item[1], reverse=True)[:3]
+
+        print("Accuracy", accuracy_score(y_true,y_pred))
+        print("F1-score", f1_score(y_true,y_pred,average='macro'))
+        print("Confusion_matrix \n", confusion_matrix(y_true,y_pred))
+        print("Most error label dictionary",most_error_label)
