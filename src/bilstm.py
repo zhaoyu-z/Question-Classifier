@@ -2,19 +2,16 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-import configparser
 import pickle
 from sklearn.metrics import f1_score, accuracy_score, confusion_matrix
-from preprocessing import get_embvec
+from global_parser import parser
 from glove import read_glove
 from split_label import SplitLabel
 from vocabulary import Vocabulary
+
 class BiLSTMTagger(nn.Module):
 
    def __init__(self, tagset_size, file_path, word_embeddings):
-       parser = configparser.ConfigParser()
-       parser.sections()
-       parser.read("../data/bilstm.config")
        self.embedding_dim = int(parser['Network Structure']['word_embedding_dim'])
        self.batch_size = int(parser['Network Structure']['batch_size'])
 
@@ -24,32 +21,6 @@ class BiLSTMTagger(nn.Module):
        self.bilstm = nn.LSTM(self.embedding_dim, self.hidden_dim, bidirectional=True)
        self.word_embeddings = word_embeddings
        self.hidden2tag = nn.Linear(self.hidden_dim * 2, tagset_size)
-
-
-   # def bilstm_vec(self, sentence):
-   #     parser = configparser.ConfigParser()
-   #     parser.sections()
-   #     parser.read("../data/bilstm.config")
-   #     pretrained = eval(parser['Options for model']['pretrained'])
-   #     freeze = eval(parser['Options for model']['freeze'])
-   #     embeds = get_embvec(sentence, self.vol, self.embedding_dim) # nn.Embedding.from_pretrained object
-   #
-   #     if pretrained:
-   #         #print(freeze)
-   #         embeds = nn.Embedding.from_pretrained(embeds, freeze=freeze)
-   #         # print(embeds.weight.requires_grad)
-   #         # bilstm_out, (h_n, c_n) = self.bilstm(embeds.view(len(embeds), 1, -1))
-   #         embeds_num = embeds.weight.data.numpy()
-   #         embeds_num = embeds_num.reshape(len(embeds_num), 1, -1)
-   #         #bilstm_out, (h_n, c_n) = self.bilstm(embeds.view(len(embeds_num), 1, -1))
-   #         bilstm_out, (h_n, c_n) = self.bilstm(torch.from_numpy(embeds_num))
-   #     else:
-   #         bilstm_out, (h_n, c_n) = self.bilstm(embeds.view(len(embeds), 1, -1))
-   #
-   #     out = torch.hstack((h_n[-2, :, :], h_n[-1, :, :]))
-   #
-   #     return out
-
 
    def forward(self, sentence_in):
         embeds = self.word_embeddings(sentence_in)
@@ -63,9 +34,6 @@ class BiLSTMTagger(nn.Module):
         return tag_scores
 
 def train(file_path):
-    parser = configparser.ConfigParser()
-    parser.sections()
-    parser.read("../data/bilstm.config")
     pretrained = parser['Options for model']['pretrained']
     freeze = eval(parser['Options for model']['freeze'])
     train_path = parser['Paths To Datasets And Evaluation']['path_train']
@@ -112,10 +80,10 @@ def train(file_path):
 
             # Step 2. Get our inputs ready for the network, that is, turn them into
             # Tensors of word indices.
+            sentence_in = voca.get_sentence_ind(sentence,"Bilstm")
             targets = torch.tensor([tag_to_ix[tags]],dtype=torch.long)
 
             # Step 3. Run our forward pass.
-            sentence_in = voca.get_sentence_ind(sentence)
             tag_scores = model.forward(sentence_in)
             #
             # Step 4. Compute the loss, gradients, and update the parameters by
@@ -131,7 +99,7 @@ def train(file_path):
             y_pred = []
             most_error_label = {}
             for sentence, tags in zip(features,labels):
-                sentence_in = voca.get_sentence_ind(sentence)
+                sentence_in = voca.get_sentence_ind(sentence,"Bilstm")
                 tag_scores = model.forward(sentence_in)
 
                 ind = torch.argmax(tag_scores)
@@ -160,17 +128,13 @@ def train(file_path):
     pickle.dump(tag_to_ix, tag2index_file)
     tag2index_file.close()
 
-    # voca_filepath = parser['Options for model']['tag2index_save_path']
-    voca_filepath = "../data/bilstm.voca"
+    voca_filepath = parser['Options for model']['voca_save_path']
     voca_file = open(voca_filepath, "wb")
     pickle.dump(voca, voca_file)
     voca_file.close()
     # return model, tag_to_ix
 
 def test(file_path,model=None, tag_to_ix=None):
-    parser = configparser.ConfigParser()
-    parser.sections()
-    parser.read("../data/bilstm.config")
     model_path = parser['Options for model']['model_save_path']
     model = torch.load(model_path)
     model.to('cpu')
@@ -178,7 +142,7 @@ def test(file_path,model=None, tag_to_ix=None):
     tag2index_file = open(tag2index_path, "rb")
     tag_to_ix = pickle.load(tag2index_file)
 
-    voca_filepath = "../data/bilstm.voca"
+    voca_filepath = parser['Options for model']['voca_save_path']
     voca_file = open(voca_filepath, "rb")
     voca = pickle.load(voca_file)
 
@@ -190,7 +154,7 @@ def test(file_path,model=None, tag_to_ix=None):
         y_pred = []
         most_error_label = {}
         for sentence, tags in zip(features,labels):
-            sentence_in = voca.get_sentence_ind(sentence)
+            sentence_in = voca.get_sentence_ind(sentence,"Bilstm")
             tag_scores = model.forward(sentence_in)
 
             ind = torch.argmax(tag_scores)
@@ -210,34 +174,3 @@ def test(file_path,model=None, tag_to_ix=None):
         print("F1-score", f1_score(y_true,y_pred,average='macro'))
         print("Confusion_matrix \n", confusion_matrix(y_true,y_pred))
         print("Most error label dictionary",most_error_label)
-
-def test_one(model=None, tag_to_ix=None, test_sentence="How are you ?"):
-    parser = configparser.ConfigParser()
-    parser.sections()
-    parser.read("../data/bilstm.config")
-    model_path = parser['Options for model']['model_save_path']
-    model = torch.load(model_path)
-    model.to('cpu')
-    tag2index_path = parser['Options for model']['tag2index_save_path']
-    tag2index_file = open(tag2index_path, "rb")
-    tag_to_ix = pickle.load(tag2index_file)
-
-    pretrained = parser['Options for model']['pretrained']
-    if pretrained:
-        glove_path = parser['Using pre-trained Embeddings']['path_pre_emb']
-        glove_vec = read_glove(glove_path)
-        embedding_dim = int(parser['Network Structure']['word_embedding_dim'])
-
-        with torch.no_grad():
-            inputs = get_embvec(test_sentence, glove_vec, embedding_dim)
-            # print(inputs)
-            tag_scores = model.forward(test_sentence)
-            # print(tag_scores)
-
-            ind = torch.argmax(tag_scores)
-
-            k = [k for k, v in tag_to_ix.items() if v == ind]
-
-            print(k)
-# train()
-# test()

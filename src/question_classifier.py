@@ -5,37 +5,11 @@ import torch.optim as optim
 import numpy
 import string
 import random
-from preprocessing import parser as conf_parser
+from global_parser import parser as conf_parser
 import argparse
 import bilstm
 import bow
 
-class BagOfWords:
-
-    def __init__(self,sentences,volcab,word_embedding_dim):
-        self.sentences = sentences
-        self.volcab = volcab
-        self.word_embedding_dim = word_embedding_dim
-
-    def words(self,sentence):
-        words = sentence.split()
-        words = list(
-            filter(lambda token: token not in string.punctuation and token not in ["``","''"], words))
-        lower_words =[w.lower() for w in words]
-        return lower_words
-
-    def bow_vec(self):
-        bow_vecs = []
-        for sentence in self.sentences:
-            sentence_word = self.words(sentence)
-            bow_vector = numpy.zeros(self.word_embedding_dim)
-            for w in sentence_word:
-                bow_vector += self.volcab.get(w)
-            bow_vector[:] = [x / len(sentence_word) for x in bow_vector]
-            bow_vecs.append(bow_vector)
-        return bow_vecs
-
-#"../data/config.ini"
 def train(confi_file_path):
     torch.manual_seed(1)
     random.seed(1)

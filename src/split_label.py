@@ -12,15 +12,7 @@ class SplitLabel:
                 [label, feature]= sentence.split(sep=' ', maxsplit=1)
                 for sent in sentence:
                     count += 1
-                    # if (count % 10000==0):
-                        # print ("read {0} sentences".format (count))
                 labels.append(label)
                 features.append(feature)
-            # print ("Done reading file")
-            # print ()
         file.close()
         return features, labels
-
-# split = SplitLabel("../data/train_5500.label.txt")
-# feature, label = split.generate_sentences()
-# print(label)

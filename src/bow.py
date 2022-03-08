@@ -5,8 +5,7 @@ import torch.optim as optim
 import pickle
 from sklearn.metrics import f1_score, accuracy_score, confusion_matrix
 from torch.autograd import Variable
-from preprocessing import parser
-from preprocessing import get_embvec
+from global_parser import parser
 from glove import read_glove
 from vocabulary import Vocabulary
 from split_label import SplitLabel
@@ -27,14 +26,6 @@ class BagOfWords(nn.Module):
         self.activation_function1 = nn.Tanh()
 
         self.hidden3tag = nn.Linear(self.hidden_dim, tagset_size)
-
-
-    # def bow_vec(self, sentence):
-    #     #embeds = get_embvec(sentence, self.vol, self.embedding_dim)
-    #
-    #     embeds = torch.mean(embeds, dim=0)
-    #
-    #     return embeds
 
     def forward(self, sentence):
         sentence_vector = self.word_embeddings(sentence)
@@ -97,10 +88,10 @@ def train(file_path):
 
             # Step 2. Get our inputs ready for the network, that is, turn them into
             # Tensors of word indices.
+            sentence_in = voca.get_sentence_ind(sentence,"Bow")
             targets = torch.tensor([tag_to_ix[tags]],dtype=torch.long)
 
             # Step 3. Run our forward pass.
-            sentence_in = voca.get_sentence_ind(sentence)
             tag_scores = model.forward(sentence_in)
             #
             # Step 4. Compute the loss, gradients, and update the parameters by
@@ -116,7 +107,7 @@ def train(file_path):
             y_pred = []
             most_error_label = {}
             for sentence, tags in zip(features,labels):
-                sentence_in = voca.get_sentence_ind(sentence)
+                sentence_in = voca.get_sentence_ind(sentence,"Bow")
                 tag_scores = model.forward(sentence_in)
 
                 ind = torch.argmax(tag_scores)
@@ -145,8 +136,7 @@ def train(file_path):
     pickle.dump(tag_to_ix, tag2index_file)
     tag2index_file.close()
 
-    # voca_filepath = parser['Options for model']['tag2index_save_path']
-    voca_filepath = "../data/bow.voca"
+    voca_filepath = parser['Options for model']['voca_save_path']
     voca_file = open(voca_filepath, "wb")
     pickle.dump(voca, voca_file)
     voca_file.close()
@@ -160,7 +150,7 @@ def test(file_path,model=None, tag_to_ix=None):
     tag2index_file = open(tag2index_path, "rb")
     tag_to_ix = pickle.load(tag2index_file)
 
-    voca_filepath = "../data/bow.voca"
+    voca_filepath = parser['Options for model']['voca_save_path']
     voca_file = open(voca_filepath, "rb")
     voca = pickle.load(voca_file)
 
@@ -172,7 +162,7 @@ def test(file_path,model=None, tag_to_ix=None):
         y_pred = []
         most_error_label = {}
         for sentence, tags in zip(features,labels):
-            sentence_in = voca.get_sentence_ind(sentence)
+            sentence_in = voca.get_sentence_ind(sentence,"Bow")
             tag_scores = model.forward(sentence_in)
 
             ind = torch.argmax(tag_scores)

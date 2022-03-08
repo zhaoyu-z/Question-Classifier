@@ -1,11 +1,10 @@
 import numpy as np
 import string
 from split_label import SplitLabel
-import configparser
 import torch
 import torch.nn as nn
 from glove import read_glove
-
+from global_parser import parser
 
 class Vocabulary:
     UNK_token = 0
@@ -69,7 +68,6 @@ class Vocabulary:
             self.word2vec[words[i]] = torch.tensor(num_eb[i,:].tolist())#, requires_grad=True)
 
 
-
     def filter(self, threshold):
         self.word2count = {k: v for k, v in self.word2count.items() if v >= threshold}
         other_words = self.word2count.keys()
@@ -91,16 +89,28 @@ class Vocabulary:
         return self.word2vec
 
 
-    def get_sentence_ind(self, sentence):
+    def get_sentence_ind(self, sentence, method):
         output = []
-        for word in sentence.split(' '):
-            word = word.lower()
-            if word in self.word2ind:
-                # print(word)
-                output.append(int(self.word2ind[word]))
-            else:
-                # print("#UNK#")
-                output.append(int(self.word2ind["#UNK#"]))
+        if method == "Bilstm":
+            for word in sentence.split(' '):
+                word = word.lower()
+                if word in self.word2ind:
+                    # print(word)
+                    output.append(int(self.word2ind[word]))
+                else:
+                    # print("#UNK#")
+                    output.append(int(self.word2ind["#UNK#"]))
+        else:
+            for word in sentence.split(' '):
+                word = word.lower()
+                if word not in string.punctuation:
+                    if word in self.word2ind:
+                        # print(word)
+                        output.append(int(self.word2ind[word]))
+                    else:
+                        # print("#UNK#")
+                        output.append(int(self.word2ind["#UNK#"]))
+
 
         output = torch.tensor(output, dtype=torch.long)
 
@@ -109,62 +119,52 @@ class Vocabulary:
     def setup(self, cor):
         corpus = SplitLabel(cor)
         features,_ = corpus.generate_sentences()
-        #print(features)
         self.read_stop_words('../data/stopwords.txt')
         for s in features:
             self.add_sentence(s)
-        # print(len(voca.word2count.keys()))
-
-        parser = configparser.ConfigParser()
-        parser.sections()
-        parser.read("../data/bow.config")
-
         self.filter(int(parser['Hyperparameters']['vocab_threshold']))
 
 
 
 
 
-
-
-
-def test():
-    corpus = SplitLabel("../data/train.txt")
-    features,_ = corpus.generate_sentences()
-    #print(features)
-    voca = Vocabulary("train", 300)
-    voca.read_stop_words('../data/stopwords.txt')
-    for s in features:
-        voca.add_sentence(s)
-    # print(len(voca.word2count.keys()))
-
-    parser = configparser.ConfigParser()
-    parser.sections()
-    parser.read("../data/bow.config")
-
-    voca.filter(int(parser['Hyperparameters']['vocab_threshold']))
-    voca.setup("../data/train.txt")
-    print(dict(sorted(voca.word2count.items(), key=lambda item: item[1])))
-    print(max(voca.word2count.values()))
-
-    print(len(voca.word2ind))
-    print(len(voca.word2count))
-    print(len(voca.word2vec))
-    print(len(voca.ind2word))
-    print(voca.num_words)
-
-    t = voca.get_sentence_ind("What does the name ` Fatman ' mean ?")
-    print(t.size())
-    torch.set_printoptions(profile="full")
-    print(t)
-    print(voca.word2ind.keys())
-    print(voca.num_words)
-    print(voca.word2ind)
-    with open("../data/stopwords.txt", 'r') as file:
-        words = file.read().split("\n")
-        words = list(filter(None, words))
-    #     print(words)
-    vec = read_glove("../data/glove.small.txt")
-    voca = Vocabulary("train", 300)
-    voca.set_word_vector(vec)
-#test()
+# def test():
+#     corpus = SplitLabel("../data/train.txt")
+#     features,_ = corpus.generate_sentences()
+#     #print(features)
+#     voca = Vocabulary("train", 300)
+#     voca.read_stop_words('../data/stopwords.txt')
+#     for s in features:
+#         voca.add_sentence(s)
+#     # print(len(voca.word2count.keys()))
+#
+#     parser = configparser.ConfigParser()
+#     parser.sections()
+#     parser.read("../data/bow.config")
+#
+#     voca.filter(int(parser['Hyperparameters']['vocab_threshold']))
+#     voca.setup("../data/train.txt")
+#     print(dict(sorted(voca.word2count.items(), key=lambda item: item[1])))
+#     print(max(voca.word2count.values()))
+#
+#     print(len(voca.word2ind))
+#     print(len(voca.word2count))
+#     print(len(voca.word2vec))
+#     print(len(voca.ind2word))
+#     print(voca.num_words)
+#
+#     t = voca.get_sentence_ind("What does the name ` Fatman ' mean ?")
+#     print(t.size())
+#     torch.set_printoptions(profile="full")
+#     print(t)
+#     print(voca.word2ind.keys())
+#     print(voca.num_words)
+#     print(voca.word2ind)
+#     with open("../data/stopwords.txt", 'r') as file:
+#         words = file.read().split("\n")
+#         words = list(filter(None, words))
+#     #     print(words)
+#     vec = read_glove("../data/glove.small.txt")
+#     voca = Vocabulary("train", 300)
+#     voca.set_word_vector(vec)
+# #test()
