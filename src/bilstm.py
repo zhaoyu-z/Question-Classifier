@@ -40,6 +40,7 @@ def train(file_path):
     word_dim = parser['Network Structure']['word_embedding_dim']
     learning_rate = float(parser['Hyperparameters']['lr_param'])
     model_type = parser['Options for model']['model']
+    epoch_number = int(parser['Model Settings']['epoch'])
     if eval(pretrained):
         if freeze:
             print("Training pretrained and freeze", model_type, "model...")
@@ -74,7 +75,7 @@ def train(file_path):
     #optimizer = optim.Adam(model.parameters(), lr=0.05)
     #optimizer = torch.optim.Adam(model.parameters(), lr= 0.01)
 
-    for epoch in range(10):  # again, normally you would NOT do 300 epochs, it is toy data
+    for epoch in range(epoch_number):  # again, normally you would NOT do 300 epochs, it is toy data
         for sentence, tags in zip(features, labels):
             # Step 1. Remember that Pytorch accumulates gradients.
             # We need to clear them out before each instance
