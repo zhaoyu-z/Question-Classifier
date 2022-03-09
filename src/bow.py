@@ -45,7 +45,7 @@ def train(file_path):
     freeze = eval(parser['Options for model']['freeze'])
     train_path = parser['Paths To Datasets And Evaluation']['path_train']
     word_dim = parser['Network Structure']['word_embedding_dim']
-    learning_rate = float(parser['Hyperparameters']['lr_param'])
+    # learning_rate = float(parser['Hyperparameters']['lr_param'])
     model_type = parser['Options for model']['model']
     epoch_number = int(parser['Model Settings']['epoch'])
     if eval(pretrained):
