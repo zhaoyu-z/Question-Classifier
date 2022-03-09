@@ -10,6 +10,7 @@ import configparser
 import argparse
 import bilstm
 import bow
+import ensemble
 
 def train(confi_file_path):
     torch.manual_seed(1)
@@ -31,8 +32,10 @@ def test(confi_file_path):
 
     if confi_file_path.split('/')[-1] == 'bilstm.config':
         bilstm.test(confi_file_path)
-    else:
+    elif confi_file_path.split('/')[-1] == 'bow.config':
         bow.test(confi_file_path)
+    else:
+        ensemble.test(confi_file_path)
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--config', type=str, required=True, help='Configuration file')
