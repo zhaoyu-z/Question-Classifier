@@ -5,7 +5,8 @@ import torch.optim as optim
 import numpy
 import string
 import random
-from global_parser import parser as conf_parser
+from global_parser import parser as config_parser
+import configparser
 import argparse
 import bilstm
 import bow
@@ -14,7 +15,7 @@ def train(confi_file_path):
     torch.manual_seed(1)
     random.seed(1)
 
-    conf_parser.read(confi_file_path)
+    config_parser.read(confi_file_path)
 
     if confi_file_path.split('/')[-1] == 'bilstm.config':
         bilstm.train(confi_file_path)
@@ -26,13 +27,12 @@ def test(confi_file_path):
 
     random.seed(1)
 
-    conf_parser.read(confi_file_path)
+    config_parser.read(confi_file_path)
 
     if confi_file_path.split('/')[-1] == 'bilstm.config':
         bilstm.test(confi_file_path)
     else:
         bow.test(confi_file_path)
-
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--config', type=str, required=True, help='Configuration file')
