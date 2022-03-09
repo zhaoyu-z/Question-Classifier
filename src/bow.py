@@ -157,6 +157,7 @@ def test(file_path,model=None, tag_to_ix=None):
         print("Testing random", model_type, "model...")
     print()
 
+    output_file = parser['Evaluation']['path_eval_result']
     model_path = parser['Options for model']['model_save_path']
     model = torch.load(model_path)
     model.to('cpu')
@@ -175,24 +176,29 @@ def test(file_path,model=None, tag_to_ix=None):
         y_true = []
         y_pred = []
         most_error_label = {}
-        for sentence, tags in zip(features,labels):
-            sentence_in = voca.get_sentence_ind(sentence,"Bow")
-            tag_scores = model.forward(sentence_in)
+        with open(output_file, 'w') as f:
+            for sentence, tags in zip(features,labels):
+                sentence_in = voca.get_sentence_ind(sentence,"Bow")
+                tag_scores = model.forward(sentence_in)
+                ind = torch.argmax(tag_scores)
 
-            ind = torch.argmax(tag_scores)
+                predicted_label = list(tag_to_ix.keys())[list(tag_to_ix.values()).index(ind)]
+                f.write(str(predicted_label) + "\n")
+                y_pred.append(ind)
+                y_true.append(tag_to_ix[tags])
 
-            y_pred.append(ind)
-            y_true.append(tag_to_ix[tags])
+                if tag_to_ix[tags] != ind:
+                    if tags not in most_error_label.keys():
+                        most_error_label[tags] = 1
+                    else:
+                        most_error_label[tags] += 1
 
-            if tag_to_ix[tags] != ind:
-                if tags not in most_error_label.keys():
-                    most_error_label[tags] = 1
-                else:
-                    most_error_label[tags] += 1
+            most_error_label = sorted(most_error_label.items(), key=lambda item: item[1], reverse=True)[:3]
+            accuracy = accuracy_score(y_true,y_pred)
+            f.write("Overall Accuracy of " + str(model_type) + " model:" + str(accuracy))
+            f.close()
 
-        most_error_label = sorted(most_error_label.items(), key=lambda item: item[1], reverse=True)[:3]
-
-        print("Accuracy", accuracy_score(y_true,y_pred))
+        print("Accuracy", accuracy)
         print("F1-score", f1_score(y_true,y_pred,average='macro'))
         print("Confusion_matrix \n", confusion_matrix(y_true,y_pred))
         print("First three most frequent misclassifed label:",most_error_label)
