@@ -46,12 +46,13 @@ def train(file_path):
     train_path = parser['Paths To Datasets And Evaluation']['path_train']
     word_dim = parser['Network Structure']['word_embedding_dim']
     learning_rate = float(parser['Hyperparameters']['lr_param'])
+    model_type = parser['Options for model']['model']
     if eval(pretrained):
-        print("pretrained")
         if freeze:
-            print("Frozen")
+            print("Training pretrained and freeze", model_type, "model...")
         else:
-            print("Fine-tuning")
+            print("Training pretrained and fine-tuning", model_type, "model...")
+        print()
         glove_path = parser['Using pre-trained Embeddings']['path_pre_emb']
         vec = read_glove(glove_path)
         voca = Vocabulary("train", word_dim)
@@ -60,7 +61,8 @@ def train(file_path):
         voca.from_word2vect_wordEmbeddings(freeze)
         word_emb = voca.get_word_embeddings()
     else:
-        print("random")
+        print("Training random", model_type, "model...")
+        print()
         voca = Vocabulary("train", word_dim)
         voca.setup('../data/train.txt')
         word_emb = voca.get_word_embeddings()
@@ -125,8 +127,8 @@ def train(file_path):
 
             print("Accuracy", accuracy_score(y_true,y_pred))
             print("F1-score", f1_score(y_true,y_pred,average='macro'))
-            print("Confusion_matrix \n", confusion_matrix(y_true,y_pred))
-            print("Most error label dictionary",most_error_label)
+            # print("Confusion_matrix \n", confusion_matrix(y_true,y_pred))
+            # print("First three most frequent misclassifed label:",most_error_label)
             print()
 
     torch.save(model, parser['Options for model']['model_save_path'])
@@ -143,6 +145,18 @@ def train(file_path):
     # return model, tag_to_ix
 
 def test(file_path,model=None, tag_to_ix=None):
+    pretrained = eval(parser['Options for model']['pretrained'])
+    model_type = parser['Options for model']['model']
+    if pretrained:
+        freeze = eval(parser['Options for model']['freeze'])
+        if freeze:
+            print("Testing pretrained and freeze", model_type, "model...")
+        else:
+            print("Testing pretrained and fine-tuning", model_type, "model...")
+    else:
+        print("Testing random", model_type, "model...")
+    print()
+
     model_path = parser['Options for model']['model_save_path']
     model = torch.load(model_path)
     model.to('cpu')
@@ -181,4 +195,4 @@ def test(file_path,model=None, tag_to_ix=None):
         print("Accuracy", accuracy_score(y_true,y_pred))
         print("F1-score", f1_score(y_true,y_pred,average='macro'))
         print("Confusion_matrix \n", confusion_matrix(y_true,y_pred))
-        print("Most error label dictionary",most_error_label)
+        print("First three most frequent misclassifed label:",most_error_label)
