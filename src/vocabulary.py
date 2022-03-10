@@ -39,6 +39,8 @@ class Vocabulary:
             self.add_word(word)
 
     def set_word_embeddings(self):
+        torch.manual_seed(1)
+        random.seed(1)
         self.word_embeddings = nn.Embedding(self.num_words, int(self.dim))
 
 
