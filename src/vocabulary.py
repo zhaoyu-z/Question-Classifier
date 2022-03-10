@@ -5,7 +5,7 @@ import torch
 import torch.nn as nn
 from glove import read_glove
 from global_parser import parser
-
+import random
 class Vocabulary:
     UNK_token = 0
     def __init__(self, name, dim):
