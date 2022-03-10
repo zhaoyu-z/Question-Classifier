@@ -41,14 +41,14 @@ class BagOfWords(nn.Module):
         return tag_scores.unsqueeze(0)
 
 def train(file_path):
-    pretrained = parser['Options for model']['pretrained']
+    pretrained = eval(parser['Options for model']['pretrained'])
     freeze = eval(parser['Options for model']['freeze'])
     train_path = parser['Paths To Datasets And Evaluation']['path_train']
     word_dim = parser['Network Structure']['word_embedding_dim']
     learning_rate = float(parser['Hyperparameters']['lr_param'])
     model_type = parser['Options for model']['model']
     epoch_number = int(parser['Model Settings']['epoch'])
-    if eval(pretrained):
+    if pretrained:
         if freeze:
             print("Training pretrained and freeze", model_type, "model...")
         else:
