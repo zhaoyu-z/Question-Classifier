@@ -6,7 +6,7 @@ The classifier is used to do a task such as
 ``` Output``` one of N predefined classes (e.g., NUM:date, which is the class label for questions that require an answer of date)
 
 
-#### How to setup environment 
+#### How to setup environment
 (Ensure you have installed the basic python3 environment)
 
 
@@ -42,7 +42,8 @@ python3 question_classifier.py --train --config '../data/bilstm.config'
 python3 question_classifier.py --train --config '../data/bow.config'
 ```
 
-Below are the **testing steps**, **REMEMBER** you should run the corresponding training step of the classified model above firstly, and for the **Ensemble model**, you need to train both classified models firstly, i.e. training the Bilstm and Bow models at first.
+Below are the **testing steps**, **REMEMBER** you should run the corresponding training step of the classified model above firstly, and for the **Ensemble model**, you need to train both classified models firstly, i.e. training the Bilstm and Bow models at first, and then you are
+allowed to ensemble a model and test it.
 
 ``` shell
 # If you want to test the Bilstm model
@@ -66,7 +67,7 @@ cd data
 Open the corresponding configuration file for bilstm and bow model and the below parameters are allowed to change.
 
 ``` shell
-## If pretrained is False, Randomly initialised word embeddings are set; 
+## If pretrained is False, Randomly initialised word embeddings are set;
 ## If pretrained is True, Pre-trained word embeddings are set.
 pretrained : True
 
@@ -81,7 +82,3 @@ epoch: 10
 lr_param: 0.02
 
 ```
-
-
-
-
