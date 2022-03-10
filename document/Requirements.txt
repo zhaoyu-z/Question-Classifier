@@ -1,0 +1,3 @@
+- Classifiers utilises some standard python3 library, Pytorch library to build the neural network.
+- Exceptionally models use sklearn library: f1_score, accuracy_score, confusion_matrix for evaluation metrics.
+- Exceptionally models use configparser library to setup the interfaces.
