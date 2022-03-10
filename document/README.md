@@ -19,7 +19,7 @@ pip3 install --user scikit-learn
 ```
 
 #### Folders descriptions
-```document```: a document containing a description for each function, a README file with instructions on how to use the code.
+```document```: a document  Function_Description.md containing a description for each function, a README file with instructions on how to use the code, a Requirements.txt containing the used python3 library.
 
 ```data```: training, dev, test, configuration files and some extra files needed for models (e.g., vocabulary). For each model, one configuration file is provided(e.g., bow.config, bilstm.config).
 
