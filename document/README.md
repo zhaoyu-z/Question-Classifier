@@ -12,7 +12,7 @@ The classifier is used to do a task such as
 
 ``` shell
 # Install pytorch library if you do not
-pip3 install --user pytorch
+pip3 install --user torch
 
 # Install sklearn library if you do not
 pip3 install --user scikit-learn
