@@ -26,13 +26,13 @@ pip3 install --user scikit-learn
 ```src```: source code.
 
 #### How to use the classifier
-Dowload all the three folders and move to ```src``` folder.
+Download all the three folders and move to the ```src``` folder.
 
 ``` shell
 cd src
 ```
 
-Below are the **training steps** , every training needs few minutes to complete.
+Below are the **training steps** , every training needs a few minutes to complete.
 
 ``` shell
 # If you want to train the Bilstm model
@@ -64,15 +64,15 @@ cd data
 
 ```
 
-Open the corresponding configuration file for bilstm and bow model and the below parameters are allowed to change.
+Open the corresponding configuration file for the bilstm and bow model and the below parameters are allowed to change.
 
 ``` shell
 ## If pretrained is False, Randomly initialised word embeddings are set;
 ## If pretrained is True, Pre-trained word embeddings are set.
 pretrained : True
 
-## If freeze is false, model fine-tune the pre-trained word embeddings.
-## If freeze is True, model freeze the pre-trained word embeddings.
+## If freeze is false, the model fine-tunes the pre-trained word embeddings.
+## If freeze is True, the model freezes the pre-trained word embeddings.
 freeze : True
 
 ## The number of training epochs setting for the model
