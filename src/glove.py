@@ -6,7 +6,6 @@ def read_by_tokens(fileobj):
             yield token
 
 def read_glove(path):
-    # path = "../data/glove.small.txt"
     vols = []
     vecs = []
     vec = []

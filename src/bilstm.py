@@ -59,7 +59,7 @@ def train(file_path):
         print("Training random", model_type, "model...")
         print()
         voca = Vocabulary("train", word_dim)
-        voca.setup('../data/train.txt')
+        voca.setup(train_path)
         word_emb = voca.get_word_embeddings()
     features,labels = SplitLabel(train_path).generate_sentences()
     tag_to_ix = {}
@@ -73,8 +73,6 @@ def train(file_path):
     loss_function = nn.NLLLoss()
     print("learning_rate: ", learning_rate)
     optimizer = optim.SGD(model.parameters(), lr=learning_rate)
-    #optimizer = optim.Adam(model.parameters(), lr=0.05)
-    #optimizer = torch.optim.Adam(model.parameters(), lr= 0.01)
 
     for epoch in range(epoch_number):  # again, normally you would NOT do 300 epochs, it is toy data
         for sentence, tags in zip(features, labels):
@@ -118,11 +116,8 @@ def train(file_path):
                         most_error_label[tags] += 1
 
             most_error_label = sorted(most_error_label.items(), key=lambda item: item[1], reverse=True)[:3]
-            # print("Total number of labels:", len(most_error_label)) # 50
             print("Accuracy", accuracy_score(y_true,y_pred))
             print("F1-score", f1_score(y_true,y_pred,average='macro'))
-            # print("Confusion_matrix \n", confusion_matrix(y_true,y_pred))
-            # print("First three most frequent misclassifed label:",most_error_label)
             print()
 
     torch.save(model, parser['Options for model']['model_save_path'])
@@ -136,7 +131,6 @@ def train(file_path):
     voca_file = open(voca_filepath, "wb")
     pickle.dump(voca, voca_file)
     voca_file.close()
-    # return model, tag_to_ix
 
 def test(file_path,model=None, tag_to_ix=None):
     pretrained = eval(parser['Options for model']['pretrained'])
@@ -188,7 +182,6 @@ def test(file_path,model=None, tag_to_ix=None):
                         most_error_label[tags] += 1
 
             most_error_label = sorted(most_error_label.items(), key=lambda item: item[1], reverse=True)[:3]
-            # print("Total number of labels:", len(most_error_label)) ## 33
             accuracy = accuracy_score(y_true,y_pred)
             f.write("Overall Accuracy of " + str(model_type) + " model:" + str(accuracy))
             f.close()
@@ -196,13 +189,4 @@ def test(file_path,model=None, tag_to_ix=None):
         print("Accuracy", accuracy)
         print("F1-score", f1_score(y_true,y_pred,average='macro'))
         print("Confusion_matrix \n", confusion_matrix(y_true,y_pred))
-        # import seaborn as sns
-        # import matplotlib.pyplot as plt
-        # cm = confusion_matrix(y_true,y_pred)
-        # ax = plt.axes()
-        # ax.set_title('Confusion matrix for bilstm using random\n word embeddings')
-        # svm = sns.heatmap(cm, cmap="Oranges", ax = ax)
-        #
-        # plt.savefig('../visualization/cm_ra.png', dpi=400)
-        #figure.savefig('../visualization/cm_ft.png', dpi=400)
         print("First three most frequent misclassifed label:",most_error_label)
