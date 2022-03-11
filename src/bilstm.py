@@ -196,13 +196,13 @@ def test(file_path,model=None, tag_to_ix=None):
         print("Accuracy", accuracy)
         print("F1-score", f1_score(y_true,y_pred,average='macro'))
         print("Confusion_matrix \n", confusion_matrix(y_true,y_pred))
-        import seaborn as sns
-        import matplotlib.pyplot as plt
-        cm = confusion_matrix(y_true,y_pred)
-        ax = plt.axes()
-        ax.set_title('Confusion matrix for bilstm using random\n word embeddings')
-        svm = sns.heatmap(cm, cmap="Oranges", ax = ax)
-
-        plt.savefig('../visualization/cm_ra.png', dpi=400)
+        # import seaborn as sns
+        # import matplotlib.pyplot as plt
+        # cm = confusion_matrix(y_true,y_pred)
+        # ax = plt.axes()
+        # ax.set_title('Confusion matrix for bilstm using random\n word embeddings')
+        # svm = sns.heatmap(cm, cmap="Oranges", ax = ax)
+        #
+        # plt.savefig('../visualization/cm_ra.png', dpi=400)
         #figure.savefig('../visualization/cm_ft.png', dpi=400)
         print("First three most frequent misclassifed label:",most_error_label)
