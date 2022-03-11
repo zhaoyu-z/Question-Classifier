@@ -38,10 +38,11 @@ def train(file_path):
     freeze = eval(parser['Options for model']['freeze'])
     train_path = parser['Paths To Datasets And Evaluation']['path_train']
     word_dim = parser['Network Structure']['word_embedding_dim']
-    learning_rate = float(parser['Hyperparameters']['lr_param'])
     model_type = parser['Options for model']['model']
     epoch_number = int(parser['Model Settings']['epoch'])
+    learning_rate = float(parser['Hyperparameters']['lr_random'])
     if eval(pretrained):
+        learning_rate = float(parser['Hyperparameters']['lr_pre'])
         if freeze:
             print("Training pretrained and freeze", model_type, "model...")
         else:
@@ -54,7 +55,6 @@ def train(file_path):
         voca.from_word2vect_word2ind()
         voca.from_word2vect_wordEmbeddings(freeze)
         word_emb = voca.get_word_embeddings()
-
     else:
         print("Training random", model_type, "model...")
         print()
@@ -71,6 +71,7 @@ def train(file_path):
     model = BiLSTMTagger(len(tag_to_ix), file_path, word_emb)
 
     loss_function = nn.NLLLoss()
+    print("learning_rate: ", learning_rate)
     optimizer = optim.SGD(model.parameters(), lr=learning_rate)
     #optimizer = optim.Adam(model.parameters(), lr=0.05)
     #optimizer = torch.optim.Adam(model.parameters(), lr= 0.01)
@@ -195,4 +196,13 @@ def test(file_path,model=None, tag_to_ix=None):
         print("Accuracy", accuracy)
         print("F1-score", f1_score(y_true,y_pred,average='macro'))
         print("Confusion_matrix \n", confusion_matrix(y_true,y_pred))
+        import seaborn as sns
+        import matplotlib.pyplot as plt
+        cm = confusion_matrix(y_true,y_pred)
+        ax = plt.axes()
+        ax.set_title('Confusion matrix for bilstm using random\n word embeddings')
+        svm = sns.heatmap(cm, cmap="Oranges", ax = ax)
+
+        plt.savefig('../visualization/cm_ra.png', dpi=400)
+        #figure.savefig('../visualization/cm_ft.png', dpi=400)
         print("First three most frequent misclassifed label:",most_error_label)
